@@ -16,29 +16,29 @@ The final integrated model should therefore treat fee objects as operational rec
 
 ## 2. Duplicate Table Analysis
 
-| Legacy Fee Table | Action | Reason |
-|---|---|---|
-| `students` | Remove | Legacy source table only. Migration must not create, populate, or reference a standalone target student master. |
-| `classes` | Remove | Duplicate class master. Admission already owns class identity through `school_class` and `section`. |
-| `student_class` | Keep and Refactor | Useful operational mapping table for reporting and fee assignment, but it must reference `admission` and `school_class`. |
-| `transactions` | Merge | Its role overlaps the canonical fee transaction stack already represented by `invoice`, `payment`, and `payment_receipts`. |
-| `fee_structure` | Keep and Modify | Core fee configuration table, but it must reference the Admission class master (`school_class`). |
-| `refund_requests` | Merge | Canonical version already exists in the Admission-first schema and must be the one retained. |
-| `payment_receipts` | Merge | Canonical version already exists in the Admission-first schema and must be the one retained. |
+| Legacy Fee Table   | Action            | Reason                                                                                                                     |
+| ------------------ | ----------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `students`         | Remove            | Legacy source table only. Migration must not create, populate, or reference a standalone target student master.            |
+| `classes`          | Remove            | Duplicate class master. Admission already owns class identity through `school_class` and `section`.                        |
+| `student_class`    | Keep and Refactor | Useful operational mapping table for reporting and fee assignment, but it must reference `admission` and `school_class`.   |
+| `transactions`     | Merge             | Its role overlaps the canonical fee transaction stack already represented by `invoice`, `payment`, and `payment_receipts`. |
+| `fee_structure`    | Keep and Modify   | Core fee configuration table, but it must reference the Admission class master (`school_class`).                           |
+| `refund_requests`  | Merge             | Canonical version already exists in the Admission-first schema and must be the one retained.                               |
+| `payment_receipts` | Merge             | Canonical version already exists in the Admission-first schema and must be the one retained.                               |
 
 ## 3. Foreign Key Mapping Report
 
-| Current FK | New FK | Reason |
-|---|---|---|
-| `students(id)` | Removed | Legacy source-table dependency only; no standalone student master should exist in the migration target. |
-| `classes(id)` | Removed | Class ownership is already held by `school_class`. |
-| `student_class.student_id -> students.id` | `student_class.admission_id -> admission.id` | Fee assignment and reporting should follow admission, not a duplicate student master. |
-| `student_class.class_id -> classes.id` | `student_class.class_id -> school_class.id` | Class reference must point to the Admission class master. |
-| `fee_structure.class_id -> classes.id` | `fee_structure.class_id -> school_class.id` | Fee rules must attach to the Admission class master. |
-| `transactions.student_id -> students.id` | `payment.admission_id -> admission.id` | Transactions must be owned by admission. |
-| `transactions.class_id -> classes.id` | `payment.admission_id -> admission.id` | Class ownership is implied by admission and should not be duplicated in fee transactions. |
-| `refund_requests.student_id -> students.id` | `refund_requests.admission_id -> admission.id` | Refunds should follow the same admission anchor as payments. |
-| `payment_receipts.transaction_id -> transactions.id` | `payment_receipts.payment_id -> payment.id` | Receipts should be tied to canonical payment rows. |
+| Current FK                                           | New FK                                         | Reason                                                                                                  |
+| ---------------------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `students(id)`                                       | Removed                                        | Legacy source-table dependency only; no standalone student master should exist in the migration target. |
+| `classes(id)`                                        | Removed                                        | Class ownership is already held by `school_class`.                                                      |
+| `student_class.student_id -> students.id`            | `student_class.admission_id -> admission.id`   | Fee assignment and reporting should follow admission, not a duplicate student master.                   |
+| `student_class.class_id -> classes.id`               | `student_class.class_id -> school_class.id`    | Class reference must point to the Admission class master.                                               |
+| `fee_structure.class_id -> classes.id`               | `fee_structure.class_id -> school_class.id`    | Fee rules must attach to the Admission class master.                                                    |
+| `transactions.student_id -> students.id`             | `payment.admission_id -> admission.id`         | Transactions must be owned by admission.                                                                |
+| `transactions.class_id -> classes.id`                | `payment.admission_id -> admission.id`         | Class ownership is implied by admission and should not be duplicated in fee transactions.               |
+| `refund_requests.student_id -> students.id`          | `refund_requests.admission_id -> admission.id` | Refunds should follow the same admission anchor as payments.                                            |
+| `payment_receipts.transaction_id -> transactions.id` | `payment_receipts.payment_id -> payment.id`    | Receipts should be tied to canonical payment rows.                                                      |
 
 ## 4. Required Changes
 
@@ -83,7 +83,7 @@ The final integrated model should therefore treat fee objects as operational rec
 ### Fee tables kept in canonical form
 
 - `fee_structure`
-- `student_class`  
+- `student_class`
 - `student_fee_assignment`
 - `invoice`
 - `payment`

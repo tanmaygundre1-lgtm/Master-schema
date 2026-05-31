@@ -33,22 +33,25 @@ FROM classes c
 ON CONFLICT (school_id, class_name) DO NOTHING;
 
 CREATE TEMP TABLE legacy_class_map AS
-WITH params AS (
-    SELECT 1::BIGINT AS school_id
-)
+WITH
+    params AS (
+        SELECT 1::BIGINT AS school_id
+    )
 SELECT
     c.id AS legacy_class_id,
     sc.id AS school_class_id
-FROM classes c
+FROM
+    classes c
     JOIN params p ON TRUE
     JOIN school_class sc ON sc.school_id = p.school_id
     AND sc.class_name = c.class_name;
 
 CREATE TEMP TABLE legacy_student_application_map AS
-SELECT DISTINCT ON (s.id)
-    s.id AS legacy_student_id,
+SELECT DISTINCT
+    ON (s.id) s.id AS legacy_student_id,
     asi.application_id
-FROM students s
+FROM
+    students s
     JOIN application_student_info asi ON (
         (
             s.email IS NOT NULL
@@ -76,10 +79,9 @@ ORDER BY
     asi.application_id;
 
 CREATE TEMP TABLE legacy_student_admission_map AS
-SELECT
-    lsam.legacy_student_id,
-    ad.id AS admission_id
-FROM legacy_student_application_map lsam
+SELECT lsam.legacy_student_id, ad.id AS admission_id
+FROM
+    legacy_student_application_map lsam
     JOIN application a ON a.id = lsam.application_id
     JOIN admission ad ON ad.application_id = a.id;
 

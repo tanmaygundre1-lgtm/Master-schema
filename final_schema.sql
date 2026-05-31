@@ -62,33 +62,6 @@ CREATE INDEX idx_section_school_id ON section (school_id);
 
 CREATE INDEX idx_section_class_id ON section (class_id);
 
-CREATE TABLE student (
-    id BIGSERIAL PRIMARY KEY,
-    school_id BIGINT NOT NULL REFERENCES school (id) ON DELETE CASCADE,
-    first_name VARCHAR(100) NOT NULL,
-    middle_name VARCHAR(100),
-    last_name VARCHAR(100) NOT NULL,
-    gender VARCHAR(20) CHECK (
-        gender IN ('Male', 'Female', 'Other')
-    ),
-    date_of_birth DATE,
-    email VARCHAR(100),
-    phone VARCHAR(20),
-    blood_group VARCHAR(10),
-    aadhar_number VARCHAR(20),
-    address TEXT,
-    city VARCHAR(100),
-    state VARCHAR(100),
-    postal_code VARCHAR(20),
-    country VARCHAR(100),
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX idx_student_school_id ON student (school_id);
-
-CREATE INDEX idx_student_aadhar ON student (aadhar_number);
-
 CREATE TABLE lead(
     id BIGSERIAL PRIMARY KEY,
     school_id BIGINT NOT NULL REFERENCES school (id) ON DELETE CASCADE,
@@ -144,7 +117,6 @@ CREATE INDEX idx_lead_school_status_date ON lead(
 CREATE TABLE admission (
     id BIGSERIAL PRIMARY KEY,
     school_id BIGINT NOT NULL REFERENCES school (id) ON DELETE CASCADE,
-    student_id BIGINT NOT NULL REFERENCES student (id) ON DELETE CASCADE,
     lead_id BIGINT REFERENCES lead(id) ON DELETE SET NULL,
     academic_year_id BIGINT NOT NULL REFERENCES academic_year (id) ON DELETE RESTRICT,
     class_id BIGINT NOT NULL REFERENCES school_class (id) ON DELETE RESTRICT,
@@ -178,8 +150,6 @@ WHERE
 
 CREATE INDEX idx_admission_school_id ON admission (school_id);
 
-CREATE INDEX idx_admission_student_id ON admission (student_id);
-
 CREATE INDEX idx_admission_lead_id ON admission (lead_id);
 
 CREATE INDEX idx_admission_academic_year_id ON admission (academic_year_id);
@@ -203,7 +173,12 @@ CREATE TABLE student_class (
     class_id BIGINT NOT NULL REFERENCES school_class (id) ON DELETE RESTRICT,
     enrollment_date DATE NOT NULL DEFAULT CURRENT_DATE,
     status VARCHAR(30) NOT NULL DEFAULT 'active' CHECK (
-        status IN ('active', 'inactive', 'graduated', 'transferred')
+        status IN (
+            'active',
+            'inactive',
+            'graduated',
+            'transferred'
+        )
     ),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -977,9 +952,7 @@ CREATE TRIGGER tr_section_updated_at
 BEFORE UPDATE ON section
 FOR EACH ROW EXECUTE FUNCTION update_timestamp();
 
-CREATE TRIGGER tr_student_updated_at
-BEFORE UPDATE ON student
-FOR EACH ROW EXECUTE FUNCTION update_timestamp();
+-- student table removed from final schema; related trigger omitted
 
 CREATE TRIGGER tr_lead_updated_at
 BEFORE UPDATE ON lead

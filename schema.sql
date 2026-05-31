@@ -285,7 +285,12 @@ CREATE TABLE student_class (
     class_id BIGINT NOT NULL REFERENCES school_class (id) ON DELETE RESTRICT,
     enrollment_date DATE NOT NULL DEFAULT CURRENT_DATE,
     status VARCHAR(30) NOT NULL DEFAULT 'active' CHECK (
-        status IN ('active', 'inactive', 'graduated', 'transferred')
+        status IN (
+            'active',
+            'inactive',
+            'graduated',
+            'transferred'
+        )
     ),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
