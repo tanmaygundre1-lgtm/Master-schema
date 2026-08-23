@@ -1,0 +1,7 @@
+sqldeveloper.exe
+
+superadmin@brightfuture.edu.in :- tanmay@123=	$2a$10$1RCMoF/VdCmfQjneWWD3eOpH9qBaUTPPMdL97UdAHbUxRH/AXrjri
+counselor@brightfuture.edu.in   :- hashed_password_123=$2a$10$H6J5SKFv7nfrInohi1mMt.LOi/4yEL40wF0uH6tTZjnGFrOiXu2gG
+admin :- admin:- 	$2a$10$aRpBMw9U8MxUvve8v3zi2e6XLfgGjEyP3nseyXRcTDsJ9L5GS5FVy
+admin@serviceprovider.com :- hashed_password_456:- $2a$10$KbY9VPdEiMsNGXn/6DPMh.nadT.qAhakVUOx8HI6z10a8cYg9H2Xu
+support@serviceprovider:-  hashed_password_456 :- $2a$10$KbY9VPdEiMsNGXn/6DPMh.nadT.qAhakVUOx8HI6z10a8cYg9H2Xu

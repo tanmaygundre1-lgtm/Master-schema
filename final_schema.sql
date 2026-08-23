@@ -1041,3 +1041,82 @@ FOR EACH ROW EXECUTE FUNCTION update_timestamp();
 CREATE TRIGGER tr_task_updated_at
 BEFORE UPDATE ON task
 FOR EACH ROW EXECUTE FUNCTION update_timestamp();
+
+
+-- applicaton module exrata tables which added previously
+
+-- ============================================================================
+-- NEW TABLES TO APPEND (Safe from Conflicts)
+-- ============================================================================
+
+-- 1. Course Module
+CREATE TABLE course (
+    id BIGSERIAL PRIMARY KEY,
+    school_id BIGINT NOT NULL REFERENCES school (id) ON DELETE CASCADE,
+    course_name VARCHAR(150) NOT NULL,
+    course_code VARCHAR(50),
+    description TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_course_school UNIQUE (school_id, course_code)
+);
+CREATE INDEX idx_course_school_id ON course(school_id);
+CREATE TRIGGER tr_course_updated_at BEFORE UPDATE ON course FOR EACH ROW EXECUTE FUNCTION update_timestamp();
+
+CREATE TABLE bulk_upload_log (
+    id BIGSERIAL PRIMARY KEY,
+    school_id BIGINT NOT NULL REFERENCES school (id) ON DELETE CASCADE,
+    uploaded_by BIGINT NOT NULL REFERENCES app_user (id) ON DELETE CASCADE,
+    module_name VARCHAR(50) NOT NULL, -- e.g., 'admissions', 'fee_payments'
+    file_name VARCHAR(255) NOT NULL,
+    total_records INT NOT NULL DEFAULT 0,
+    successful_records INT NOT NULL DEFAULT 0,
+    failed_records INT NOT NULL DEFAULT 0,
+    error_details JSONB, 
+    status VARCHAR(30) NOT NULL DEFAULT 'processing' CHECK (
+        status IN ('processing', 'completed', 'failed')
+    ),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_bulk_upload_school_id ON bulk_upload_log(school_id);
+CREATE TRIGGER tr_bulk_upload_log_updated_at BEFORE UPDATE ON bulk_upload_log FOR EACH ROW EXECUTE FUNCTION update_timestamp();
+
+-- 3. Fee Type Master (For Dropdowns)
+-- Note: fee_structure_component is skipped to prevent conflict with existing fee_structure
+CREATE TABLE fee_type (
+    id BIGSERIAL PRIMARY KEY,
+    school_id BIGINT NOT NULL REFERENCES school (id) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL, 
+    is_refundable BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_fee_type_school_id ON fee_type(school_id);
+CREATE TRIGGER tr_fee_type_updated_at BEFORE UPDATE ON fee_type FOR EACH ROW EXECUTE FUNCTION update_timestamp();
+
+CREATE TABLE parent_admission_map (
+    id BIGSERIAL PRIMARY KEY,
+    parent_user_id BIGINT NOT NULL REFERENCES parent_user (id) ON DELETE CASCADE,
+    admission_id BIGINT NOT NULL REFERENCES admission (id) ON DELETE CASCADE,
+    relation VARCHAR(50) NOT NULL, -- e.g., Father, Mother, Guardian
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_parent_admission UNIQUE (parent_user_id, admission_id)
+);
+CREATE INDEX idx_parent_map_admission_id ON parent_admission_map(admission_id);
+
+-- 2. Parent Login & Admission Mapping
+CREATE TABLE parent_user (
+    id BIGSERIAL PRIMARY KEY,
+    school_id BIGINT NOT NULL REFERENCES school (id) ON DELETE CASCADE,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    phone_number VARCHAR(20) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_parent_user_school_id ON parent_user(school_id);
+CREATE TRIGGER tr_parent_user_updated_at BEFORE UPDATE ON parent_user FOR EACH ROW EXECUTE FUNCTION update_timestamp();
